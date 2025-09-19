@@ -38,7 +38,7 @@ def send_poll():
             chat_id=channel_id,
             question=question,
             options=options,
-            is_anonymous=False,
+            is_anonymous=True,
             allows_multiple_answers=False
         )
         
