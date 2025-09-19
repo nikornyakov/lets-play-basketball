@@ -1,4 +1,4 @@
-name: Lets play Basketball
+name: Basketball Poll Bot
 
 on:
   schedule:
