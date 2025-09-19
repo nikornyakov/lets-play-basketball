@@ -1,7 +1,6 @@
-# get_group_id.py
 import logging
 import os
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import Updater, MessageHandler, filters
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения из .env файла
@@ -51,20 +50,19 @@ def main():
     print("3. Бот ответит с ID группы")
     print("=" * 50)
     
-    # Создаем updater и dispatcher
-    updater = Updater(BOT_TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
+    # Создаем Application вместо Updater (для версии 20.x+)
+    from telegram.ext import Application
+    application = Application.builder().token(BOT_TOKEN).build()
     
     # Добавляем обработчик для всех текстовых сообщений
-    dispatcher.add_handler(MessageHandler(Filters.text, get_chat_id))
+    application.add_handler(MessageHandler(filters.TEXT, get_chat_id))
     
     # Запускаем бота
-    updater.start_polling()
     print("Бот запущен и ожидает сообщения...")
     print("Для остановки нажмите Ctrl+C")
     
-    # Бесконечный цикл для работы бота
-    updater.idle()
+    # Запускаем polling
+    application.run_polling()
 
 if __name__ == "__main__":
     main()
