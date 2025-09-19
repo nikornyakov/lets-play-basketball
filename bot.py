@@ -25,38 +25,30 @@ def send_poll():
         # Создаем updater
         updater = Updater(token)
         
-        # Определяем текущий день недели
-        now = datetime.now()
-        day_of_week = now.weekday()  # 4 - пятница
-        
         # Форматируем дату для отображения
-        date_str = now.strftime("%d.%m.%Y")
+        date_str = datetime.now().strftime("%d.%m.%Y")
         
-        if day_of_week == 4:  # Пятница (0-пн, 1-вт, 2-ср, 3-чт, 4-пт, 5-сб, 6-вс)
-            question = f"Баскетбол в Четверг ({date_str}) 🏀"
-            options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
-            message = "Тренировка в Четверг в 19:00. Кто будет?"
-            
-            # Отправляем опрос
-            updater.bot.send_poll(
-                chat_id=channel_id,
-                question=question,
-                options=options,
-                is_anonymous=False,
-                allows_multiple_answers=False
-            )
-            
-            # Дополнительное текстовое сообщение
-            updater.bot.send_message(
-                chat_id=channel_id,
-                text=message
-            )
-            
-            logger.info(f"Опрос успешно отправлен в пятницу")
-            
-        else:
-            logger.info(f"Сегодня не пятница ({day_of_week}), опрос не отправляется")
-            return
+        # Всегда отправляем опрос (для тестирования)
+        question = f"ТЕСТ: Баскетбол в пятницу ({date_str}) 🏀"
+        options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
+        message = "ТЕСТ: Тренировка в субботу в 11:00. Кто будет?"
+        
+        # Отправляем опрос
+        updater.bot.send_poll(
+            chat_id=channel_id,
+            question=question,
+            options=options,
+            is_anonymous=False,
+            allows_multiple_answers=False
+        )
+        
+        # Дополнительное текстовое сообщение
+        updater.bot.send_message(
+            chat_id=channel_id,
+            text=message
+        )
+        
+        logger.info(f"ТЕСТ: Опрос отправлен успешно")
         
     except Exception as e:
         logger.error(f"Ошибка при отправке опроса: {e}")
