@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install python-telegram-bot==20.7 python-dotenv
+        pip install requests python-dotenv
         
     - name: Create .env file
       run: |
@@ -26,8 +26,8 @@ jobs:
         
     - name: Run get_group_id script
       run: |
-        echo "Этот скрипт будет работать 5 минут. За это время:"
+        echo "Этот скрипт будет работать 1 минуту. За это время:"
         echo "1. Добавьте бота в группу"
         echo "2. Отправьте сообщение в группе"
         echo "3. ID группы появится в логах ниже"
-        timeout 300s python get_group_id.py
+        python get_group_id.py
