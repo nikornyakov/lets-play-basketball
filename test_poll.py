@@ -4,10 +4,14 @@ from datetime import datetime
 from telegram import Poll
 from telegram.ext import Updater
 
-# Настройка логирования
+# Настройка логирования в файл
 logging.basicConfig(
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    handlers=[
+        logging.FileHandler("test_poll.log", encoding='utf-8'),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -59,16 +63,6 @@ def send_test_poll():
             chat_id=group_id,
             text=message
         )
-        
-        # Закрепляем опрос в группе (опционально)
-        try:
-            updater.bot.pin_chat_message(
-                chat_id=group_id,
-                message_id=poll_message.message_id
-            )
-            logger.info("Тестовый опрос закреплен в группе")
-        except Exception as e:
-            logger.warning(f"Не удалось закрепить опрос: {e}")
         
         logger.info("Тестовый опрос успешно отправлен")
         
