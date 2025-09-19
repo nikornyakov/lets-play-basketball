@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -10,6 +11,10 @@ def get_group_id():
     """Получаем ID группы через Telegram API"""
     print("Отправьте любое сообщение в группе, куда добавлен бот...")
     print("Ожидание сообщений в течение 1 минуты...")
+    
+    if not BOT_TOKEN:
+        print("Ошибка: BOT_TOKEN не найден в .env файле")
+        return None
     
     # Получаем последние updates
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUpdates"
@@ -41,7 +46,4 @@ def get_group_id():
     return None
 
 if __name__ == "__main__":
-    if not BOT_TOKEN:
-        print("Ошибка: BOT_TOKEN не найден в .env файле")
-    else:
-        get_group_id()
+    get_group_id()
