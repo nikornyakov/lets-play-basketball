@@ -1,8 +1,8 @@
 import os
 import logging
 from datetime import datetime
-from telegram import Poll
-from telegram.ext import Updater
+from telegram import Bot
+from telegram.error import TelegramError
 
 # Настройка логирования в файл
 logging.basicConfig(
@@ -26,18 +26,18 @@ def send_test_poll():
         
         if not token or not group_id:
             logger.error("Не установлены BOT_TOKEN или GROUP_ID")
-            return
+            return False
         
         # Преобразуем group_id в целое число
         try:
             group_id = int(group_id)
         except ValueError:
             logger.error(f"GROUP_ID должен быть числом, получено: {group_id}")
-            return
+            return False
         
-        # Создаем updater
-        updater = Updater(token)
-        logger.info("Updater успешно создан")
+        # Создаем экземпляр бота
+        bot = Bot(token=token)
+        logger.info("Бот успешно инициализирован")
         
         # Форматируем дату для отображения
         date_str = datetime.now().strftime("%d.%m.%Y %H:%M")
@@ -49,7 +49,7 @@ def send_test_poll():
         
         # Отправляем НЕанонимный опрос
         logger.info("Отправляем тестовый опрос в группу")
-        poll_message = updater.bot.send_poll(
+        poll_message = bot.send_poll(
             chat_id=group_id,
             question=question,
             options=options,
@@ -59,20 +59,32 @@ def send_test_poll():
         
         # Дополнительное текстовое сообщение
         logger.info("Отправляем текстовое сообщение в группу")
-        updater.bot.send_message(
+        bot.send_message(
             chat_id=group_id,
             text=message
         )
         
         logger.info("Тестовый опрос успешно отправлен")
+        return True
         
+    except TelegramError as e:
+        logger.error(f"Ошибка Telegram API при отправке опроса: {e}")
+        return False
     except Exception as e:
-        logger.error(f"Ошибка при отправке тестового опроса: {e}")
+        logger.error(f"Неожиданная ошибка при отправке тестового опроса: {e}")
+        return False
 
 if __name__ == "__main__":
     logger.info("=" * 50)
     logger.info("Запуск тестового опроса")
     logger.info("=" * 50)
-    send_test_poll()
+    
+    success = send_test_poll()
+    
+    if success:
+        logger.info("Тестирование завершено успешно!")
+    else:
+        logger.error("Тестирование завершено с ошибками!")
+    
     logger.info("Завершение работы")
     logger.info("=" * 50)
