@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from datetime import datetime
 from telegram import Bot
 from telegram.error import TelegramError
@@ -15,8 +16,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def send_test_poll():
-    """Функция отправки тестового опроса в группу"""
+async def send_test_poll_async():
+    """Асинхронная функция отправки тестового опроса в группу"""
     try:
         # Получаем токен из переменных окружения
         token = os.getenv("BOT_TOKEN")
@@ -47,9 +48,9 @@ def send_test_poll():
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
         message = "Это тестовый опрос для проверки работы бота. Если вы видите это сообщение, бот работает корректно!"
         
-        # Отправляем НЕанонимный опрос
+        # Отправляем НЕанонимный опрос (асинхронно)
         logger.info("Отправляем тестовый опрос в группу")
-        poll_message = bot.send_poll(
+        await bot.send_poll(
             chat_id=group_id,
             question=question,
             options=options,
@@ -57,9 +58,9 @@ def send_test_poll():
             allows_multiple_answers=False
         )
         
-        # Дополнительное текстовое сообщение
+        # Дополнительное текстовое сообщение (асинхронно)
         logger.info("Отправляем текстовое сообщение в группу")
-        bot.send_message(
+        await bot.send_message(
             chat_id=group_id,
             text=message
         )
@@ -74,12 +75,13 @@ def send_test_poll():
         logger.error(f"Неожиданная ошибка при отправке тестового опроса: {e}")
         return False
 
-if __name__ == "__main__":
+async def main():
+    """Основная асинхронная функция"""
     logger.info("=" * 50)
     logger.info("Запуск тестового опроса")
     logger.info("=" * 50)
     
-    success = send_test_poll()
+    success = await send_test_poll_async()
     
     if success:
         logger.info("Тестирование завершено успешно!")
@@ -88,3 +90,7 @@ if __name__ == "__main__":
     
     logger.info("Завершение работы")
     logger.info("=" * 50)
+
+if __name__ == "__main__":
+    # Запускаем асинхронную функцию
+    asyncio.run(main())
