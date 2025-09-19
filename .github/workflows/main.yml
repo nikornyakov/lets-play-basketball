@@ -3,7 +3,7 @@ name: Basketball Poll Bot
 on:
   schedule:
     # Запускать каждый понедельник и среду в 12:00 по UTC (15:00 по Москве)
-    - cron: '0 12 * * 1,3'
+    - cron: '* * * * *'
   workflow_dispatch:  # Позволяет запускать вручную
 
 jobs:
