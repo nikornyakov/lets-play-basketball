@@ -3,10 +3,6 @@ import logging
 import asyncio
 from telegram import Bot
 from telegram.error import TelegramError
-from dotenv import load_dotenv  # Добавьте этот импорт
-
-# Загружаем переменные окружения из .env файла
-load_dotenv()  # Добавьте эту строку
 
 # Настройка логирования
 logging.basicConfig(
@@ -25,9 +21,21 @@ async def get_group_id():
         # Получаем токен из переменных окружения
         token = os.getenv("BOT_TOKEN")
         
+        # Если токен не найден в переменных окружения, попробуем прочитать из файла .env
+        if not token:
+            try:
+                with open('.env', 'r') as f:
+                    for line in f:
+                        if line.startswith('BOT_TOKEN='):
+                            token = line.split('=', 1)[1].strip()
+                            break
+            except FileNotFoundError:
+                pass
+        
         if not token:
             logger.error("Не установлен BOT_TOKEN")
             logger.error("Убедитесь, что создали файл .env с BOT_TOKEN=ваш_токен")
+            logger.error("Или установите переменную окружения BOT_TOKEN")
             return
         
         # Создаем экземпляр бота
