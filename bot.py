@@ -1,55 +1,44 @@
 import os
 import logging
-from datetime import datetime
-from telegram import Poll
-from telegram.ext import Updater
-
-# Создаем папку для логов, если она не существует
-log_dir = "logs"
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
+import asyncio
+from datetime import datetime, timedelta
+from telegram import Bot
+from telegram.error import TelegramError
 
 # Настройка логирования
-log_file = os.path.join(log_dir, f"bot_{datetime.now().strftime('%Y%m%d')}.log")
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(log_file, encoding='utf-8'),
+        logging.FileHandler("bot.log", encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
-def send_poll():
-    """Функция отправки опроса в закрытую группу"""
+async def send_poll_async():
+    """Асинхронная функция отправки опроса в группу"""
     try:
-        logger.info("Запуск функции отправки опроса в закрытую группу")
-        
         # Получаем токен из переменных окружения
         token = os.getenv("BOT_TOKEN")
-        group_id = os.getenv("GROUP_ID")  # ID закрытой группы (отрицательное число)
+        group_id = os.getenv("GROUP_ID")
         
         logger.info(f"Получены переменные: BOT_TOKEN={token[:10]}..., GROUP_ID={group_id}")
         
         if not token or not group_id:
             logger.error("Не установлены BOT_TOKEN или GROUP_ID")
-            return
+            return False
         
-        # Преобразуем group_id в целое число (если оно передано как строка)
+        # Преобразуем group_id в целое число
         try:
             group_id = int(group_id)
         except ValueError:
             logger.error(f"GROUP_ID должен быть числом, получено: {group_id}")
-            return
-        
-        # Создаем updater
-        updater = Updater(token)
-        logger.info("Updater успешно создан")
+            return False
         
         # Определяем текущий день недели
         now = datetime.now()
-        day_of_week = now.weekday()
+        day_of_week = now.weekday()  # 0-пн, 1-вт, 2-ср, 3-чт, 4-пт, 5-сб, 6-вс
         day_name = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"][day_of_week]
         
         logger.info(f"Текущий день: {day_name} ({day_of_week})")
@@ -57,58 +46,72 @@ def send_poll():
         # Форматируем дату для отображения
         date_str = now.strftime("%d.%m.%Y")
         
+        # Определяем текст опроса в зависимости от дня недели
         if day_of_week == 0:  # Понедельник
-            logger.info("Определен понедельник, готовим опрос")
-            question = f"Баскетбол в вторник ({date_str}) 🏀"
+            # Опрос создается в понедельник для тренировки во вторник
+            training_date = (now + timedelta(days=1)).strftime("%d.%m.%Y")
+            question = f"Баскетбол во вторник ({training_date}) 🏀"
             options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
-            message = "Тренировка завтра в 19:00. Не забудьте взять воду и форму!"
+            message = f"Тренировка во вторник ({training_date}) с 19:00 до 20:30. Кто будет?"
             
         elif day_of_week == 2:  # Среда
-            logger.info("Определена среда, готовим опрос")
-            question = f"Баскетбол в четверг ({date_str}) 🏀"
+            # Опрос создается в среду для тренировки в четверг
+            training_date = (now + timedelta(days=1)).strftime("%d.%m.%Y")
+            question = f"Баскетбол в четверг ({training_date}) 🏀"
             options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
-            message = "Тренировка завтра в 19:00. Не забудьте взять воду и форму!"
+            message = f"Тренировка в четверг ({training_date}) с 19:00 до 20:30. Кто будет?"
             
         else:
             logger.info(f"Сегодня {day_name}, опрос не требуется")
-            return
+            return False
         
-        # Отправляем НЕанонимный опрос в закрытую группу
-        logger.info("Отправляем неанонимный опрос в закрытую группу")
-        poll_message = updater.bot.send_poll(
+        # Создаем экземпляр бота
+        bot = Bot(token=token)
+        logger.info("Бот успешно инициализирован")
+        
+        # Отправляем НЕанонимный опрос (асинхронно)
+        logger.info(f"Отправляем опрос в группу: {question}")
+        await bot.send_poll(
             chat_id=group_id,
             question=question,
             options=options,
-            is_anonymous=False,  # Неанонимный опрос
+            is_anonymous=False,
             allows_multiple_answers=False
         )
         
-        # Дополнительное текстовое сообщение
+        # Дополнительное текстовое сообщение (асинхронно)
         logger.info("Отправляем текстовое сообщение в группу")
-        updater.bot.send_message(
+        await bot.send_message(
             chat_id=group_id,
             text=message
         )
         
-        # Закрепляем опрос в группе (опционально)
-        try:
-            updater.bot.pin_chat_message(
-                chat_id=group_id,
-                message_id=poll_message.message_id
-            )
-            logger.info("Опрос закреплен в группе")
-        except Exception as e:
-            logger.warning(f"Не удалось закрепить опрос: {e}")
+        logger.info("Опрос успешно отправлен")
+        return True
         
-        logger.info(f"Неанонимный опрос успешно отправлен в {day_name}")
-        
+    except TelegramError as e:
+        logger.error(f"Ошибка Telegram API при отправке опроса: {e}")
+        return False
     except Exception as e:
-        logger.error(f"Ошибка при отправке опроса: {e}", exc_info=True)
+        logger.error(f"Неожиданная ошибка при отправке опроса: {e}")
+        return False
+
+async def main():
+    """Основная асинхронная функция"""
+    logger.info("=" * 50)
+    logger.info("Запуск бота для отправки опроса")
+    logger.info("=" * 50)
+    
+    success = await send_poll_async()
+    
+    if success:
+        logger.info("Опрос отправлен успешно!")
+    else:
+        logger.info("Опрос не был отправлен (не подходящий день или ошибка)")
+    
+    logger.info("Завершение работы")
+    logger.info("=" * 50)
 
 if __name__ == "__main__":
-    logger.info("=" * 50)
-    logger.info("Запуск бота для отправки опроса в закрытую группу")
-    logger.info("=" * 50)
-    send_poll()
-    logger.info("Завершение работы бота")
-    logger.info("=" * 50)
+    # Запускаем асинхронную функцию
+    asyncio.run(main())
