@@ -1,49 +1,87 @@
 import os
-import time
-import requests
-from dotenv import load_dotenv
+import logging
+import asyncio
+from telegram import Bot
+from telegram.error import TelegramError
 
-load_dotenv()
+# Настройка логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("get_group_id.log", encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-def get_group_id():
-    """Получаем ID группы через Telegram API"""
-    print("Отправьте любое сообщение в группе, куда добавлен бот...")
-    print("Ожидание сообщений в течение 1 минуты...")
-    
-    if not BOT_TOKEN:
-        print("Ошибка: BOT_TOKEN не найден в .env файле")
-        return None
-    
-    # Получаем последние updates
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUpdates"
-    
-    # Ждем 1 минуту для получения сообщений
-    for i in range(12):
-        try:
-            response = requests.get(url, timeout=10).json()
-            
-            if response["ok"] and response["result"]:
-                for update in response["result"]:
-                    if "message" in update and update["message"]["chat"]["type"] in ["group", "supergroup"]:
-                        chat_id = update["message"]["chat"]["id"]
-                        chat_title = update["message"]["chat"].get("title", "Без названия")
-                        print(f"Найдена группа: {chat_title}")
-                        print(f"ID группы: {chat_id}")
-                        return chat_id
-            
-            print(f"Ожидание... ({i*5} секунд)")
-            time.sleep(5)
+async def get_group_id():
+    """Функция для получения ID всех групп, где есть бот"""
+    try:
+        # Получаем токен из переменных окружения
+        token = os.getenv("BOT_TOKEN")
         
-        except Exception as e:
-            print(f"Ошибка при получении данных: {e}")
-            time.sleep(5)
+        if not token:
+            logger.error("Не установлен BOT_TOKEN")
+            return
+        
+        # Создаем экземпляр бота
+        bot = Bot(token=token)
+        logger.info("Бот успешно инициализирован")
+        
+        # Получаем информацию о боте
+        bot_info = await bot.get_me()
+        logger.info(f"Информация о боте: {bot_info.first_name} (@{bot_info.username})")
+        
+        # Получаем обновления (сообщения)
+        updates = await bot.get_updates()
+        
+        if not updates:
+            logger.info("Не найдено обновлений. Убедитесь, что:")
+            logger.info("1. Бот добавлен в группу")
+            logger.info("2. В группе отправлено хотя бы одно сообщение")
+            return
+        
+        logger.info("=" * 50)
+        logger.info("Найдены следующие чаты/группы:")
+        logger.info("=" * 50)
+        
+        found_groups = False
+        
+        for update in updates:
+            if update.message and update.message.chat:
+                chat = update.message.chat
+                
+                if chat.type in ["group", "supergroup"]:
+                    found_groups = True
+                    logger.info(f"Группа: {chat.title}")
+                    logger.info(f"ID: {chat.id}")
+                    logger.info(f"Тип: {chat.type}")
+                    logger.info("-" * 30)
+        
+        if not found_groups:
+            logger.info("Группы не найдены. Убедитесь, что:")
+            logger.info("1. Бот добавлен в группу как администратор")
+            logger.info("2. В группе отправлено хотя бы одно сообщение")
+            logger.info("3. Вы используете правильный токен бота")
+        
+    except TelegramError as e:
+        logger.error(f"Ошибка Telegram API: {e}")
+    except Exception as e:
+        logger.error(f"Неожиданная ошибка: {e}")
+
+async def main():
+    """Основная асинхронная функция"""
+    logger.info("=" * 50)
+    logger.info("Поиск ID групп для бота")
+    logger.info("=" * 50)
     
-    print("Не удалось найти группу. Убедитесь, что:")
-    print("1. Бот добавлен в группу")
-    print("2. В группе отправлено хотя бы одно сообщение")
-    return None
+    await get_group_id()
+    
+    logger.info("=" * 50)
+    logger.info("Завершение работы")
+    logger.info("=" * 50)
 
 if __name__ == "__main__":
-    get_group_id()
+    # Запускаем асинхронную функцию
+    asyncio.run(main())
