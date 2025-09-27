@@ -1,14 +1,17 @@
-name: Basketball Poll Bot
+name: Simple Basketball Bot
 
 on:
   schedule:
-    # Понедельник и среда в 9:00 UTC (12:00 по Москве)
-    - cron: '0 9 * * 1'  # Понедельник в 9:00 UTC
-    - cron: '0 9 * * 3'  # Среда в 9:00 UTC
-  workflow_dispatch:  # Позволяет запускать вручную
+    # Опросы: понедельник и среда в 9:00 UTC (12:00 МСК)
+    - cron: '0 9 * * 1'
+    - cron: '0 9 * * 3'
+    # Напоминания: вторник и четверг в 8:00 UTC (08:00 МСК)
+    - cron: '0 5 * * 2'
+    - cron: '0 5 * * 4'
+  workflow_dispatch:
 
 jobs:
-  send-poll:
+  simple-bot:
     runs-on: ubuntu-latest
     
     steps:
@@ -23,17 +26,17 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install python-telegram-bot==13.7
+        pip install python-telegram-bot==20.7
         
-    - name: Send poll to Telegram group
+    - name: Run simple bot
       env:
         BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         GROUP_ID: ${{ secrets.GROUP_ID }}
-      run: python bot.py
+      run: python simple_bot.py
         
     - name: Upload logs
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: bot-logs
+        name: simple-bot-logs
         path: "*.log"
