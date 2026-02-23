@@ -83,13 +83,13 @@ async def send_simple_poll():
         if day_of_week == 0:  # Понедельник
             training_date = (now + timedelta(days=1)).strftime("%d.%m.%Y")
             question = f"Баскетбол во вторник ({training_date}) 🏀"
-            options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
+            options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
             poll_message = f"Тренировка во вторник ({training_date}) с 19:00 до 20:30. Кто будет?"
             
         elif day_of_week == 2:  # Среда
             training_date = (now + timedelta(days=1)).strftime("%d.%m.%Y")
             question = f"Баскетбол в четверг ({training_date}) 🏀"
-            options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
+            options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
             poll_message = f"Тренировка в четверг ({training_date}) с 19:00 до 20:30. Кто будет?"
             
         else:
