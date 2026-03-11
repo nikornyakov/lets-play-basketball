@@ -2,78 +2,41 @@ import os
 import logging
 import asyncio
 from datetime import datetime
-from telegram import Bot
-from telegram.error import TelegramError
-
-# Настройка логирования в файл
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("test_poll.log", encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+from bot_base import TelegramBotBase, load_token_from_env
 
 async def send_test_poll_async():
     """Асинхронная функция отправки тестового опроса в группу"""
-    try:
-        # Получаем токен из переменных окружения
-        token = os.getenv("BOT_TOKEN")
-        group_id = os.getenv("GROUP_ID")
-        
-        logger.info(f"Получены переменные: BOT_TOKEN={token[:10]}..., GROUP_ID={group_id}")
-        
-        if not token or not group_id:
-            logger.error("Не установлены BOT_TOKEN или GROUP_ID")
-            return False
-        
-        # Преобразуем group_id в целое число
-        try:
-            group_id = int(group_id)
-        except ValueError:
-            logger.error(f"GROUP_ID должен быть числом, получено: {group_id}")
-            return False
-        
-        # Создаем экземпляр бота
-        bot = Bot(token=token)
-        logger.info("Бот успешно инициализирован")
-        
-        # Текст для тестового опроса
-        question = f"Баскетбол 24.02, 19:00 - 20:30 🏀"
-        options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
-        message = "Не забудьте взять воду и форму!"
-        
-        # Отправляем НЕанонимный опрос (асинхронно)
-        logger.info("Отправляем тестовый опрос в группу")
-        await bot.send_poll(
-            chat_id=group_id,
-            question=question,
-            options=options,
-            is_anonymous=False,
-            allows_multiple_answers=False
-        )
-        
-        # Дополнительное текстовое сообщение (асинхронно)
-        logger.info("Отправляем текстовое сообщение в группу")
-        await bot.send_message(
-            chat_id=group_id,
-            text=message
-        )
-        
-        logger.info("Тестовый опрос успешно отправлен")
-        return True
-        
-    except TelegramError as e:
-        logger.error(f"Ошибка Telegram API при отправке опроса: {e}")
+    bot_instance = TelegramBotBase("test_poll.log")
+    
+    # Инициализируем бота
+    if not await bot_instance.initialize_bot():
         return False
-    except Exception as e:
-        logger.error(f"Неожиданная ошибка при отправке тестового опроса: {e}")
-        return False
+    
+    # Текст для тестового опроса
+    question = f"Баскетбол 24.02, 19:00 - 20:30 🏀"
+    options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю"]
+    message = "Не забудьте взять воду и форму!"
+    
+    # Отправляем НЕанонимный опрос
+    bot_instance.logger.info("Отправляем тестовый опрос в группу")
+    success = await bot_instance.send_poll(
+        question=question,
+        options=options,
+        is_anonymous=False,
+        allows_multiple_answers=False
+    )
+    
+    if success:
+        # Дополнительное текстовое сообщение
+        bot_instance.logger.info("Отправляем текстовое сообщение в группу")
+        await bot_instance.send_message(message)
+        bot_instance.logger.info("Тестовый опрос успешно отправлен")
+    
+    return success
 
 async def main():
     """Основная асинхронная функция"""
+    logger = logging.getLogger(__name__)
     logger.info("=" * 50)
     logger.info("Запуск тестового опроса")
     logger.info("=" * 50)
