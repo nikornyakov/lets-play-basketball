@@ -48,7 +48,7 @@ async def send_simple_poll():
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
         poll_message = f"Тренировка в понедельник ({training_date}) с 19:00 до 20:30. Кто будет?"
         
-    elif day_of_week == 1:  # Среда
+    elif day_of_week == 2:  # Среда
         training_date = format_training_date(1)
         question = f"Баскетбол в четверг ({training_date}) 🏀"
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
