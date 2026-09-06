@@ -14,7 +14,7 @@ async def send_welcome_message(bot_instance):
 *📅 НАШИ ТРЕНИРОВКИ:*
 
 • **ПОНЕДЕЛЬНИК**: 19:00-20:30
-• **СРЕДА**: 20:30-22:00
+• **Четверг**: 19:00-20:30
 
 *💡 МЕСТО ПРОВЕДЕНИЯ:*
 "Basket Hall" 
@@ -48,14 +48,14 @@ async def send_simple_poll():
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
         poll_message = f"Тренировка в понедельник ({training_date}) с 19:00 до 20:30. Кто будет?"
         
-    elif day_of_week == 1:  # Вторник
+    elif day_of_week == 1:  # Среда
         training_date = format_training_date(1)
-        question = f"Баскетбол в среду ({training_date}) 🏀"
+        question = f"Баскетбол в четверг ({training_date}) 🏀"
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
-        poll_message = f"Тренировка в среду ({training_date}) с 20:30 до 22:00. Кто будет?"
+        poll_message = f"Тренировка в четверг ({training_date}) с 19:00-20:30. Кто будет?"
         
     else:
-        bot_instance.logger.info(f"Сегодня не воскресенье и не вторник, опрос не требуется")
+        bot_instance.logger.info(f"Сегодня не воскресенье и не среда, опрос не требуется")
         return False
     
     # Инициализируем бота
@@ -89,15 +89,15 @@ async def send_training_reminder():
     # Определяем текущий день недели
     day_of_week = get_day_of_week()
     
-    # Отправляем напоминание только по понедельникам и средам
+    # Отправляем напоминание только по понедельникам и четвергам
     if day_of_week == 0:  # Понедельник
         training_day = "сегодня"
         training_time = "19:00-20:30"
-    elif day_of_week == 2:  # Среда
+    elif day_of_week == 3:  # Четверг
         training_day = "сегодня"
-        training_time = "20:30-22:00"
+        training_time = "19:00-20:30"
     else:
-        bot_instance.logger.info(f"Сегодня не понедельник и не среда, напоминание не требуется")
+        bot_instance.logger.info(f"Сегодня не понедельник и не четверг, напоминание не требуется")
         return False
     
     # Инициализируем бота
@@ -154,14 +154,14 @@ async def main():
         else:
             logger.info("Приветственное сообщение не было отправлено")
     
-    elif day_of_week in [6, 1]:  # Воскресенье или вторник
+    elif day_of_week in [6, 2]:  # Воскресенье или среда
         success = await send_simple_poll()
         if success:
             logger.info("Опрос отправлен успешно!")
         else:
             logger.info("Опрос не был отправлен")
     
-    elif day_of_week in [0, 2]:  # Понедельник или среда
+    elif day_of_week in [0, 3]:  # Понедельник или четверг
         success = await send_training_reminder()
         if success:
             logger.info("Напоминание отправлено успешно!")
