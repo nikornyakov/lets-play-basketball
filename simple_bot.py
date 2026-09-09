@@ -42,13 +42,13 @@ async def send_simple_poll():
     day_of_week = get_day_of_week()
     
     # Определяем текст опроса в зависимости от дня недели
-    if day_of_week == 6:  # Воскресенье
+    if day_of_week == 7:  # Воскресенье (isoweekday)
         training_date = format_training_date(1)
         question = f"Баскетбол в понедельник ({training_date}) 🏀"
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
         poll_message = f"Тренировка в понедельник ({training_date}) с 19:00 до 20:30. Кто будет?"
         
-    elif day_of_week == 2:  # Среда
+    elif day_of_week == 3:  # Среда (isoweekday)
         training_date = format_training_date(1)
         question = f"Баскетбол в четверг ({training_date}) 🏀"
         options = ["✅ Буду", "❌ Не смогу", "🤔 Еще не знаю", "⏰ Планирую опоздать"]
@@ -90,10 +90,10 @@ async def send_training_reminder():
     day_of_week = get_day_of_week()
     
     # Отправляем напоминание только по понедельникам и четвергам
-    if day_of_week == 0:  # Понедельник
+    if day_of_week == 1:  # Понедельник (isoweekday)
         training_day = "сегодня"
         training_time = "19:00-20:30"
-    elif day_of_week == 3:  # Четверг
+    elif day_of_week == 4:  # Четверг (isoweekday)
         training_day = "сегодня"
         training_time = "19:00-20:30"
     else:
@@ -154,14 +154,14 @@ async def main():
         else:
             logger.info("Приветственное сообщение не было отправлено")
     
-    elif day_of_week in [6, 2]:  # Воскресенье или среда
+    elif day_of_week in [7, 3]:  # Воскресенье или среда (isoweekday)
         success = await send_simple_poll()
         if success:
             logger.info("Опрос отправлен успешно!")
         else:
             logger.info("Опрос не был отправлен")
     
-    elif day_of_week in [0, 3]:  # Понедельник или четверг
+    elif day_of_week in [1, 4]:  # Понедельник или четверг (isoweekday)
         success = await send_training_reminder()
         if success:
             logger.info("Напоминание отправлено успешно!")

@@ -58,12 +58,12 @@ class Config:
         return self.get('logging', {})
     
     def get_training_days(self) -> List[int]:
-        """Получение дней тренировок"""
-        return self.get('schedule.training_days', [1, 3])
+        """Получение дней тренировок (isoweekday: 1=пн, 2=вт, 3=ср, 4=чт, 5=пт, 6=сб, 7=вс)"""
+        return self.get('schedule.training_days', [2, 4])
     
     def get_poll_days(self) -> List[int]:
-        """Получение дней для опросов"""
-        return self.get('schedule.poll_days', [0, 2])
+        """Получение дней для опросов (isoweekday: 1=пн, 2=вт, 3=ср, 4=чт, 5=пт, 6=сб, 7=вс)"""
+        return self.get('schedule.poll_days', [7, 3])
     
     def get_training_time(self) -> str:
         """Получение времени тренировок"""
@@ -89,7 +89,7 @@ class Config:
 
 {welcome.get('schedule_title', '📅 РАСПИСАНИЕ ТРЕНИРОВОК НА СЛЕДУЮЩУЮ НЕДЕЛЮ:')}
 
-{welcome.get('tuesday', 'ВТОРНИК : 🏀 *19:00-20:30*')}
+{welcome.get('monday', 'ПОНЕДЕЛЬНИК : 🏀 *19:00-20:30*')}
 
 {welcome.get('thursday', 'ЧЕТВЕРГ : 🏀 *19:00-20:30*')}
 
@@ -105,13 +105,13 @@ class Config:
         """
     
     def get_poll_question(self, day: int, date: str) -> str:
-        """Получение вопроса для опроса"""
+        """Получение вопроса для опроса (isoweekday: 1=пн, 2=вт, 3=ср, 4=чт, 5=пт, 6=сб, 7=вс)"""
         messages = self.get_messages()
         poll = messages.get('poll', {})
         
-        if day == 0:  # Понедельник -> вторник
-            template = poll.get('tuesday_template', 'Баскетбол во вторник ({date}) 🏀')
-        elif day == 2:  # Среда -> четверг
+        if day == 7:  # Воскресенье -> понедельник
+            template = poll.get('tuesday_template', 'Баскетбол в понедельник ({date}) 🏀')
+        elif day == 3:  # Среда -> четверг
             template = poll.get('thursday_template', 'Баскетбол в четверг ({date}) 🏀')
         else:
             template = 'Баскетбол ({date}) 🏀'
@@ -119,13 +119,13 @@ class Config:
         return template.format(date=date)
     
     def get_poll_message(self, day: int, date: str) -> str:
-        """Получение сообщения для опроса"""
+        """Получение сообщения для опроса (isoweekday: 1=пн, 2=вт, 3=ср, 4=чт, 5=пт, 6=сб, 7=вс)"""
         messages = self.get_messages()
         poll = messages.get('poll', {})
         
-        if day == 0:  # Понедельник -> вторник
-            template = poll.get('tuesday_message', 'Тренировка во вторник ({date}) с 19:00 до 20:30. Кто будет?')
-        elif day == 2:  # Среда -> четверг
+        if day == 7:  # Воскресенье -> понедельник
+            template = poll.get('tuesday_message', 'Тренировка в понедельник ({date}) с 19:00 до 20:30. Кто будет?')
+        elif day == 3:  # Среда -> четверг
             template = poll.get('thursday_message', 'Тренировка в четверг ({date}) с 19:00 до 20:30. Кто будет?')
         else:
             template = 'Тренировка ({date}) с 19:00 до 20:30. Кто будет?'

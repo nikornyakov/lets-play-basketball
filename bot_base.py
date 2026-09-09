@@ -160,5 +160,5 @@ def format_training_date(date_offset_days=1):
 
 
 def get_day_of_week():
-    """Получение текущего дня недели (0=пн, 1=вт, ...)"""
-    return datetime.now().weekday()
+    """Получение текущего дня недели (1=пн, 2=вт, 3=ср, 4=чт, 5=пт, 6=сб, 7=вс)"""
+    return datetime.now().isoweekday()
